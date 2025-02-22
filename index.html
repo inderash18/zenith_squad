@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Travel Log</title>
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDb72JPEfZqWJax7bSsICPvCN3hRkcbaO8",
+  authDomain: "csda-22a5c.firebaseapp.com",
+  projectId: "csda-22a5c",
+  storageBucket: "csda-22a5c.firebasestorage.app",
+  messagingSenderId: "575263123413",
+  appId: "1:575263123413:web:02b72b6f0f52c94f3aff5c",
+  measurementId: "G-9JGS65CEQL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('travelForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Get form values
+                const name = document.getElementById('name').value;
+                const studentId = document.getElementById('studentId').value;
+                const destination = document.getElementById('destination').value;
+                const time = document.getElementById('time').value;
+
+                try {
+                    // Add data to Firestore
+                    await addDoc(collection(db, "travelRecords"), {
+                        name: name,
+                        studentId: studentId,
+                        destination: destination,
+                        time: time
+                    });
+
+                    alert("Record added successfully!");
+                    document.getElementById('travelForm').reset();
+                    fetchRecords();
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                }
+            });
+
+            async function fetchRecords() {
+                const recordList = document.getElementById('recordList');
+                recordList.innerHTML = '';
+
+                const querySnapshot = await getDocs(collection(db, "travelRecords"));
+                querySnapshot.forEach((doc) => {
+                    const record = doc.data();
+                    const li = document.createElement('li');
+                    li.textContent = `${record.name} - ${record.studentId} - ${record.destination} at ${record.time}`;
+                    recordList.appendChild(li);
+                });
+            }
+
+            // Load existing records on page load
+            fetchRecords();
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            width: 300px;
+        }
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #218838;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #ddd;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Student Travel Log</h2>
+        <form id="travelForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required>
+
+            <label for="studentId">Student ID:</label>
+            <input type="text" id="studentId" required>
+
+            <label for="destination">Destination:</label>
+            <input type="text" id="destination" required>
+
+            <label for="time">Time:</label>
+            <input type="time" id="time" required>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <h3>Travel Records</h3>
+        <ul id="recordList"></ul>
+    </div>
+</body>
+</html>
